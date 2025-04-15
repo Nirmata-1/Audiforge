@@ -56,7 +56,8 @@ RUN mkdir -p /tmp/uploads /tmp/downloads && \
 
 ENV AUDIVERIS_HOME=/app/audiveris \
     UPLOAD_DIR=/tmp/uploads \
-    DOWNLOAD_DIR=/tmp/downloads
+    DOWNLOAD_DIR=/tmp/downloads \
+    LOG=""
 
 EXPOSE 8080
 ENTRYPOINT ["/app/audiforge"]
