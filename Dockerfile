@@ -20,9 +20,6 @@ RUN apt-get update && \
     fontconfig \
     fonts-dejavu \
     libfreetype6 \
-    libpng16-16 \
-    libjpeg62-turbo \
-    libtiff5 \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
