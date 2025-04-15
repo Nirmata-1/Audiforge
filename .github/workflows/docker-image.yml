@@ -25,9 +25,9 @@ jobs:
       # Step 3: Build the Docker image
       - name: Build Docker image
         run: |
-          docker build -t ${{ secrets.DOCKER_USERNAME }}/meme-website:latest .
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/audiforge:latest .
 
       # Step 4: Push the Docker image to Docker Hub
       - name: Push Docker image
         run: |
-          docker push ${{ secrets.DOCKER_USERNAME }}/meme-website:latest
+          docker push ${{ secrets.DOCKER_USERNAME }}/audiforge:latest
