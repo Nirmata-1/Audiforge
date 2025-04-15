@@ -1,0 +1,10 @@
+**/node_modules
+**/.git
+**/.idea
+**/vendor
+*.log
+*.md
+Dockerfile
+.dockerignore
+.gitignore
+LICENSE

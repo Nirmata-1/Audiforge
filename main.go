@@ -39,7 +39,7 @@ var (
 func init() {
 	os.MkdirAll(UploadDir, 0755)
 	os.MkdirAll(DownloadDir, 0755)
-	templates = template.Must(template.ParseGlob("templates/*.html"))
+	templates = template.Must(template.ParseGlob("/app/templates/*.html"))
 	go startCleanupRoutine()
 }
 
@@ -49,7 +49,7 @@ func main() {
 	http.HandleFunc("/upload", uploadHandler)
 	http.HandleFunc("/status/", statusHandler)
 	http.HandleFunc("/download/", downloadHandler)
-	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("templates"))))
+	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("/app/templates"))))
 
 	log.Println("Server started on :8080")
 	log.Fatal(http.ListenAndServe(":8080", nil))
@@ -185,7 +185,7 @@ func processFile(id, inputPath string) {
 		"-PjvmLineArgs=-Xmx3g",
 		fmt.Sprintf("-PcmdLineArgs=%s", escapeArgs(cmdArgs)),
 	)
-	cmd.Dir = "./audiveris"
+	cmd.Dir = "/app/audiveris"
 
     logPath := filepath.Join(outputDir, "conversion.log")
     outputFile, err := os.Create(logPath)
