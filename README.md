@@ -37,11 +37,11 @@ A **Go-based web service** that leverages **Audiveris** for converting PDF sheet
 
    ```bash
    docker run -d -p 8080:8080 \
+     -e LOG=debug #optional
      -v /path/to/uploads:/tmp/uploads \
      -v /path/to/downloads:/tmp/downloads \
      nirmata1/audiforge:latest
-   ```
-
+   ```   
 ---
 
 ## Local Development Setup
