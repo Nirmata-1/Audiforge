@@ -192,4 +192,4 @@ A: Run with `LOG=debug ./audiforge`
 
 ## License
 
-**Apache 2.0 © 2024 Jermiah Jeffries**
+**Apache 2.0 © 2025 Jermiah Jeffries**
