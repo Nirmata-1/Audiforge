@@ -100,15 +100,33 @@ func cleanUploads(path string) error {
 }
 
 func cleanDownloads(path string) error {
-	// Delete entire conversion directory
-	if filepath.Base(filepath.Dir(path)) == filepath.Base(DownloadDir) && 
-		filepath.Dir(path) != DownloadDir {
-		if err := os.RemoveAll(filepath.Dir(path)); err == nil {
-			log.Printf("Cleaned up download directory: %s", filepath.Dir(path))
-			return filepath.SkipDir
-		}
-	}
-	return nil
+    // Resolve the absolute path of DownloadDir
+    downloadDirAbs, err := filepath.Abs(DownloadDir)
+    if err != nil {
+        return fmt.Errorf("failed to resolve DownloadDir: %v", err)
+    }
+
+    // Get the absolute path of the current file's directory
+    fileDir := filepath.Dir(path)
+    fileDirAbs, err := filepath.Abs(fileDir)
+    if err != nil {
+        return nil // Skip on error
+    }
+
+    // Check if the file's directory is a subdirectory of DownloadDir
+    if strings.HasPrefix(fileDirAbs, downloadDirAbs + string(filepath.Separator)) &&
+        fileDirAbs != downloadDirAbs {
+
+        // Delete the entire subdirectory if the file is older than TTL
+        if time.Since(info.ModTime()) > FileTTL {
+            if err := os.RemoveAll(fileDir); err == nil {
+                log.Printf("Cleaned up download directory: %s", fileDir)
+                return filepath.SkipDir // Skip remaining entries in this dir
+            }
+        }
+    }
+
+    return nil
 }
 
 func indexHandler(w http.ResponseWriter, r *http.Request) {
