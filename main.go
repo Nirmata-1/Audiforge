@@ -74,20 +74,24 @@ func cleanupFiles() {
 }
 
 func cleanupDirectory(path string, cleanFunc func(string) error) {
-	err := filepath.Walk(path, func(filePath string, info os.FileInfo, err error) error {
-		if err != nil {
-			return nil
-		}
-		
-		if time.Since(info.ModTime()) > FileTTL {
-			return cleanFunc(filePath)
-		}
-		return nil
-	})
-	
-	if err != nil {
-		log.Printf("Cleanup error: %v", err)
-	}
+    err := filepath.Walk(path, func(filePath string, info os.FileInfo, err error) error {
+        if err != nil {
+            return nil // Skip unreadable files
+        }
+
+        // Check if the file is older than TTL
+        if time.Since(info.ModTime()) > FileTTL {
+            // Call the cleanup function for old files
+            if err := cleanFunc(filePath); err != nil {
+                log.Printf("Cleanup failed for %s: %v", filePath, err)
+            }
+        }
+        return nil
+    })
+
+    if err != nil {
+        log.Printf("Cleanup error: %v", err)
+    }
 }
 
 func cleanUploads(path string) error {
@@ -100,30 +104,28 @@ func cleanUploads(path string) error {
 }
 
 func cleanDownloads(path string) error {
-    // Resolve the absolute path of DownloadDir
+    // Resolve absolute paths to handle symlinks/relative paths
     downloadDirAbs, err := filepath.Abs(DownloadDir)
     if err != nil {
         return fmt.Errorf("failed to resolve DownloadDir: %v", err)
     }
 
-    // Get the absolute path of the current file's directory
     fileDir := filepath.Dir(path)
     fileDirAbs, err := filepath.Abs(fileDir)
     if err != nil {
-        return nil // Skip on error
+        return nil // Skip if path resolution fails
     }
 
-    // Check if the file's directory is a subdirectory of DownloadDir
+    // Check if the directory is a subdirectory of DownloadDir
     if strings.HasPrefix(fileDirAbs, downloadDirAbs + string(filepath.Separator)) &&
         fileDirAbs != downloadDirAbs {
 
-        // Delete the entire subdirectory if the file is older than TTL
-        if time.Since(info.ModTime()) > FileTTL {
-            if err := os.RemoveAll(fileDir); err == nil {
-                log.Printf("Cleaned up download directory: %s", fileDir)
-                return filepath.SkipDir // Skip remaining entries in this dir
-            }
+        // Delete the entire subdirectory
+        if err := os.RemoveAll(fileDir); err != nil {
+            return fmt.Errorf("failed to delete %s: %v", fileDir, err)
         }
+        log.Printf("Cleaned up download directory: %s", fileDir)
+        return filepath.SkipDir // Skip further processing of this directory
     }
 
     return nil
