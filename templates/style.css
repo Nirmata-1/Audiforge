@@ -4,30 +4,27 @@
   --brand-blue: rgb(150, 212, 251);
 }
 
+* { box-sizing: border-box; }
+
 body {
   font-family: 'Segoe UI', system-ui, sans-serif;
   margin: 0;
   min-height: 100vh;
-  background: linear-gradient(
-      to right,
-      var(--brand-purple),
-      var(--brand-mid),
-      var(--brand-blue)
-  );
+  padding: 1rem;
+  background: linear-gradient(to right, var(--brand-purple), var(--brand-mid), var(--brand-blue));
   display: flex;
   justify-content: center;
   align-items: center;
 }
 
 .container {
-  width: 90%;
-  max-width: 600px;
+  width: min(92vw, 640px);
   text-align: center;
 }
 
 .brand {
   color: white;
-  font-size: 2.5rem;
+  font-size: clamp(1.9rem, 6vw, 2.5rem);
   margin-bottom: 0.5rem;
   text-shadow: 0 2px 4px rgba(0,0,0,0.2);
 }
@@ -42,18 +39,27 @@ body {
   position: relative;
   background: rgba(255, 255, 255, 0.95);
   border-radius: 16px;
-  padding: 2rem;
+  padding: clamp(1rem, 4vw, 2rem);
   box-shadow: 0 8px 32px rgba(0,0,0,0.1);
   backdrop-filter: blur(4px);
 }
 
+/* The result/error subtitles sit on white, so they need a dark colour;
+   the page-level subtitle above stays white. */
+.upload-container .subtitle { color: #333; }
+
 .upload-box {
   border: 2px dashed var(--brand-mid);
   border-radius: 12px;
-  padding: 3rem 2rem;
+  padding: clamp(1.5rem, 6vw, 3rem) 1rem;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: border-color 0.3s ease, background 0.3s ease;
 }
+.upload-box.drag-over {
+  border-color: var(--brand-purple);
+  background: rgba(255, 255, 255, 0.8);
+}
+.upload-box:focus-visible { outline: 3px solid var(--brand-purple); outline-offset: 3px; }
 
 .hidden-input {
   position: absolute;
@@ -85,9 +91,60 @@ body {
   font-size: 1.1rem;
 }
 
-#processing {
-  margin: 2rem 0;
+.upload-hint {
+  color: #666;
+  margin: 0;
+  font-size: 0.9rem;
+  overflow-wrap: anywhere;
 }
+
+.subtitle-note {
+  color: rgba(255, 255, 255, 0.75);
+  font-size: 0.9rem;
+  margin: -1rem 0 1.5rem;
+}
+
+.options {
+  border: 1px solid rgba(179, 173, 248, 0.5);
+  border-radius: 12px;
+  margin: 1.5rem 0 0;
+  padding: 1rem;
+  text-align: left;
+  color: #333;
+}
+.options legend {
+  color: var(--brand-purple);
+  font-weight: 600;
+  padding: 0 0.5rem;
+}
+.option-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
+}
+.option-row select, .option-row input[type="text"] {
+  flex: 1;
+  min-width: 0;
+  max-width: 280px;
+  padding: 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 1rem;
+  min-height: 44px;
+}
+.option-check {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+  font-size: 0.95rem;
+  cursor: pointer;
+}
+.option-check input { margin-top: 0.2rem; accent-color: var(--brand-purple); }
+
+#processing { margin: 2rem 0; }
 
 .spinner {
   width: 40px;
@@ -99,18 +156,44 @@ body {
   animation: spin 1s linear infinite;
 }
 
-.status-text {
-  color: var(--brand-purple);
+.status-text { color: var(--brand-purple); margin-top: 1rem; }
+.stage-text { color: #333; font-weight: 500; margin: 0.25rem 0 0; }
+.progress-text, .elapsed-text { color: #666; font-size: 0.9rem; margin: 0.5rem 0 0; }
+
+.progress-track {
+  height: 8px;
+  background: rgba(179, 173, 248, 0.25);
+  border-radius: 4px;
+  overflow: hidden;
   margin-top: 1rem;
 }
-
-#complete {
-  animation: fadeIn 0.5s ease;
+.progress-fill {
+  height: 100%;
+  width: 0;
+  background: var(--brand-purple);
+  transition: width 0.3s ease;
 }
 
-.thank-you {
-  color: var(--brand-purple);
-  margin-bottom: 1rem;
+#complete { animation: fadeIn 0.5s ease; }
+
+.thank-you { color: var(--brand-purple); margin-bottom: 1rem; }
+
+.warning {
+  background: #fff8e1;
+  border: 1px solid #f0c36d;
+  color: #6d4c00;
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  font-size: 0.95rem;
+  text-align: left;
+}
+
+.result-list {
+  text-align: left;
+  color: #333;
+  font-size: 0.95rem;
+  overflow-wrap: anywhere;
+  padding-left: 1.25rem;
 }
 
 .button-group {
@@ -126,35 +209,48 @@ body {
   border: none;
   border-radius: 8px;
   font-weight: 500;
+  font-size: 1rem;
   cursor: pointer;
+  min-height: 44px;
   transition: transform 0.2s ease, opacity 0.2s ease;
 }
+.btn:hover { transform: translateY(-2px); opacity: 0.9; }
+.btn:focus-visible { outline: 3px solid var(--brand-purple); outline-offset: 2px; }
 
-.btn:hover {
-  transform: translateY(-2px);
-  opacity: 0.9;
+.download-btn { background: var(--brand-purple); color: white; }
+.reset-btn { background: var(--brand-blue); color: white; }
+
+.log-link { margin-top: 1rem; font-size: 0.9rem; }
+.log-link a { color: var(--brand-purple); }
+.log-details { text-align: left; margin-top: 1rem; color: #333; }
+.log-details pre {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  background: #f5f5f5;
+  border-radius: 8px;
+  padding: 0.75rem;
+  font-size: 0.85rem;
+  max-height: 16rem;
+  overflow: auto;
 }
 
-.download-btn {
-  background: var(--brand-purple);
-  color: white;
+.footnote { color: rgba(255, 255, 255, 0.85); font-size: 0.85rem; margin-top: 1rem; }
+
+@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+.hidden { display: none; }
+
+/* Small screens: full-width buttons, tighter card. */
+@media (max-width: 480px) {
+  body { align-items: flex-start; padding-top: 2rem; }
+  .subtitle { font-size: 1rem; }
+  .button-group { flex-direction: column; }
+  .btn { width: 100%; }
 }
 
-.reset-btn {
-  background: var(--brand-blue);
-  color: white;
-}
-
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-.hidden {
-  display: none;
+@media (prefers-reduced-motion: reduce) {
+  .spinner { animation: none; border-top-color: var(--brand-purple); }
+  #complete { animation: none; }
+  .btn, .upload-box, .progress-fill { transition: none; }
 }

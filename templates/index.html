@@ -3,30 +3,68 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Audiforge - PDF to MusicXML Converter</title>
+    <title>ScoreForge - PDF to MusicXML Converter</title>
     <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
     <div class="container">
-        <h1 class="brand">Audiforge</h1>
+        <h1 class="brand">ScoreForge</h1>
         <p class="subtitle">PDF to MusicXML Conversion Platform</p>
+        <p class="subtitle-note">Formerly Audiforge. Best results from clean scans at 300 DPI or higher.</p>
         <div class="upload-container">
-            <div class="upload-box" id="drop-zone">
+            <div class="upload-box" id="drop-zone" tabindex="0" role="button" aria-label="Choose a PDF to convert">
                 <div class="upload-content">
-                    <svg class="upload-icon" viewBox="0 0 24 24">
+                    <svg class="upload-icon" viewBox="0 0 24 24" aria-hidden="true">
                         <path d="M14,13V17H10V13H7L12,8L17,13H14M19.35,10.03C18.67,6.59 15.64,4 12,4C9.11,4 6.6,5.64 5.35,8.03C2.34,8.36 0,10.9 0,14A6,6 0 0,0 6,20H19A5,5 0 0,0 24,15C24,12.36 21.95,10.22 19.35,10.03Z"/>
                     </svg>
                     <p class="upload-text">Click or drag PDF to convert</p>
+                    <p class="upload-hint" id="file-info">PDF only, up to 50 MB. One score per upload.</p>
                 </div>
             </div>
-            <input type="file" id="file-input" accept=".pdf" class="hidden-input">
-            <div id="processing" class="hidden">
+            <input type="file" id="file-input" accept=".pdf,application/pdf" class="hidden-input">
+            <fieldset class="options">
+                <legend>Options</legend>
+                <label class="option-row">
+                    <span>Text language</span>
+                    <select id="ocr-lang" name="ocr_lang">
+                        <option value="eng" selected>English (titles, lyrics)</option>
+                        <option value="fra">French</option>
+                        <option value="deu">German</option>
+                        <option value="ita">Italian</option>
+                        <option value="spa">Spanish</option>
+                        <option value="off">Off — notes only</option>
+                    </select>
+                </label>
+                <label class="option-row">
+                    <span>Pages</span>
+                    <input id="sheets" name="sheets" type="text" inputmode="numeric" placeholder="All pages (e.g. 1, 3-5)">
+                </label>
+                <label class="option-check">
+                    <input id="include-musicxml" name="include_musicxml" type="checkbox">
+                    Also include uncompressed MusicXML (.musicxml)
+                </label>
+                <label class="option-check">
+                    <input id="include-omr" name="include_omr" type="checkbox">
+                    Also include the Audiveris project file (.omr)
+                </label>
+                <label class="option-check">
+                    <input id="auto-download" name="auto_download" type="checkbox">
+                    Download automatically when done
+                </label>
+            </fieldset>
+            <div id="processing" class="hidden" aria-live="polite">
                 <div class="spinner"></div>
-                <p class="status-text">Transforming your sheet music...</p>
+                <p class="status-text" id="processing-text">Transforming your sheet music...</p>
+                <p class="stage-text" id="stage-text"></p>
+                <div class="progress-track" aria-hidden="true"><div class="progress-fill" id="progress-fill"></div></div>
+                <p class="progress-text" id="progress-text"></p>
+                <p class="elapsed-text" id="elapsed-text"></p>
             </div>
-            <div id="complete" class="hidden">
+            <div id="complete" class="hidden" aria-live="polite">
                 <h2 class="thank-you">Conversion Complete! 🎼</h2>
-                <p class="subtitle"></p>
+                <p class="subtitle" id="result-subtitle"></p>
+                <p class="warning hidden" id="result-warning"></p>
+                <ul class="result-list hidden" id="result-list"></ul>
                 <div class="button-group">
                     <button id="download-again" class="btn download-btn">
                         Download All Movements (ZIP)
@@ -35,8 +73,21 @@
                         Convert Another PDF
                     </button>
                 </div>
+                <p class="log-link hidden" id="log-link-wrap"><a id="log-link" href="#" target="_blank" rel="noopener">View conversion log</a></p>
+            </div>
+            <div id="error-box" class="hidden" aria-live="assertive">
+                <h2 class="thank-you">⚠️ Conversion Error</h2>
+                <p class="subtitle" id="error-text"></p>
+                <details class="log-details hidden" id="error-log-details">
+                    <summary>Conversion log (last lines)</summary>
+                    <pre id="error-log"></pre>
+                </details>
+                <div class="button-group">
+                    <button id="try-again" class="btn reset-btn">Try Again</button>
+                </div>
             </div>
         </div>
+        <p class="footnote">Powered by Audiveris. OMR is a best-effort reading of the printed score — check the MusicXML in MuseScore before trusting it bar by bar.</p>
     </div>
     <script src="/static/app.js"></script>
 </body>
